@@ -1,7 +1,10 @@
 import 'dart:io';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:uuid/uuid.dart';
 
 void main() {
   runApp(const MyApp());
@@ -29,6 +32,37 @@ class MyHome extends StatefulWidget {
 class _MyHomeState extends State<MyHome> {
 
   File? imageFile;
+
+  final TextEditingController userName = TextEditingController();
+
+  @override
+  void dispose() {
+    // TODO: implement dispose
+    userName.dispose();
+  }
+
+  bool isLoading = false;
+
+  void imageUpload()async{
+    setState(() {
+      isLoading != isLoading;
+    });
+    UploadTask uploadTask = FirebaseStorage.instance.ref().child("userImage").child(const Uuid().v1()).putFile(imageFile!);
+    TaskSnapshot taskSnapshot = await uploadTask;
+    String imgUrl = await taskSnapshot.ref.getDownloadURL();
+    userData(image: imgUrl);
+    setState(() {
+      isLoading != isLoading;
+    });
+  }
+
+  void userData({String? image})async{
+    FirebaseFirestore.instance.collection("userData").add({
+      "name" : userName.text,
+      "image" : image
+    });
+    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("User With Image Added")));
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -82,10 +116,12 @@ class _MyHomeState extends State<MyHome> {
                         });
                       }
                       else{
-                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Image Not Selected")));
+                        if(context.mounted){
+                          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Image Not Selected")));
+                        }
                       }
 
-                    }, child: Text("Gallery")),
+                    }, child: const Text("Gallery")),
                     ElevatedButton(onPressed: ()async{
                       XFile? pickImage = await ImagePicker().pickImage(source: ImageSource.camera);
 
@@ -96,15 +132,39 @@ class _MyHomeState extends State<MyHome> {
                         });
                       }
                       else{
-                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Image Not Selected")));
+                        if(context.mounted){
+                          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Image Not Selected")));
+                        }
                       }
-                    }, child: Text("Camera"))
+                    }, child: const Text("Camera"))
                   ],
                 );
               },);
 
 
-            }, child: const Text("Pick Image"))
+            }, child: const Text("Pick Image")),
+
+            const SizedBox(
+              height: 10,
+            ),
+
+            Container(
+              margin: const EdgeInsets.symmetric(horizontal: 40),
+              child: TextFormField(
+                controller: userName,
+                decoration: const InputDecoration(
+                  hintText: "Enter Your Name"
+                )
+              ),
+            ),
+
+            const SizedBox(
+              height: 10,
+            ),
+
+            ElevatedButton(onPressed: (){
+              imageUpload();
+            }, child: isLoading == false ? const Text("Add Me") : const CircularProgressIndicator())
 
           ],
         ),
