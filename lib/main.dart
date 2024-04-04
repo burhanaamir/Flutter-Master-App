@@ -1,12 +1,19 @@
 import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:firebasetts06c1/fetch_data.dart';
+import 'package:firebasetts06c1/firebase_options.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:uuid/uuid.dart';
 
-void main() {
+void main() async{
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform
+  );
   runApp(const MyApp());
 }
 
@@ -130,10 +137,12 @@ class _MyHomeState extends State<MyHome> {
                         setState(() {
                           imageFile = convertedFile;
                         });
+                        Navigator.pop(context);
                       }
                       else{
                         if(context.mounted){
                           ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Image Not Selected")));
+                          Navigator.pop(context);
                         }
                       }
                     }, child: const Text("Camera"))
@@ -164,8 +173,15 @@ class _MyHomeState extends State<MyHome> {
 
             ElevatedButton(onPressed: (){
               imageUpload();
-            }, child: isLoading == false ? const Text("Add Me") : const CircularProgressIndicator())
+            }, child: isLoading == false ? const Text("Add Me") : const CircularProgressIndicator()),
 
+            const SizedBox(
+              height: 10,
+            ),
+
+            ElevatedButton(onPressed: (){
+              Navigator.push(context, MaterialPageRoute(builder: (context) => FetchScreen(),));
+            }, child: Text("Load All Data"))
           ],
         ),
       ),

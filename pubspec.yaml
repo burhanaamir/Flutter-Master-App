@@ -39,6 +39,7 @@ dependencies:
   firebase_storage:
   cloud_firestore:
   uuid:
+  firebase_core:
 
 dev_dependencies:
   flutter_test:
