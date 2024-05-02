@@ -49,7 +49,7 @@ class _UpdateSceenState extends State<UpdateSceen> {
       "name" : userName.text,
       "image" : image
     });
-    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("User With Image Added")));
+    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("User With Image Updated")));
   }
 
   @override
